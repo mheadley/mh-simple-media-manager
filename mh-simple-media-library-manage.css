@@ -1,0 +1,3 @@
+@charset "UTF-8";
+.upload-inline-status{display: block; position:relative; z-index: 1}
+#attachment_location{display: none;}
