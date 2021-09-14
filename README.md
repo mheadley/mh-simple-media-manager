@@ -1,16 +1,18 @@
-WP Simple media locations management with real folders
-============================
+WordPress Simple media locations management with real folders
+===
 
 
 Plugin by mheadley: https://mheadley.com
 
 Visit Plugin site:https://mheadley.com/developing/wordpress-plugins/wp-simple-media-locations-management-with-real-folders/
 
-==Instructions==
+Instructions
+====
 1) Upload to wp-content/uploads/plugins folder
 2) got to plugins -> add new  to locate plugin and activate
 
-==using plugin==
+using plugin
+=====
 Media locations are created under media - > media locations menu item.  
 slug is used to create folder, name is used as frontend display only. 
 

@@ -323,6 +323,9 @@ class MH_Media_Locations
                 max-width: -webkit-calc(33% - 12px);
                 max-width: calc(33% - 12px);
             }
+            body.block-editor-page .media-modal-content .media-frame select.attachment-filters:nth-of-type(2){
+                max-width: 40%;
+            }
             </style>
             <?php
         });

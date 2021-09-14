@@ -33,7 +33,7 @@
 
 			filters.all = {
 				// Change this: use whatever default label you'd like
-				text:  'Any Media Location',
+				text:  'Any Location',
 				props: {
 					// Change this: key needs to be the WP_Query var for the taxonomy
 					attachment_location: ''
