@@ -22,3 +22,6 @@ if you want to have more than one location with the same slug please use an "_".
 
 using an "_" in a location slug will cause all text to be parsed and ONLY the last portion will be used. 
 examples: "mike_h_folder" -> "folder", "1_nooo" -> "nooo", "black" -> "black".
+
+You can use different name for filter and actual folders 
+ex.  Name: "Platform files", slug: "1_pf"; will result in dropdown showing: Platform files and folder on server being wp-content/uploads/pf

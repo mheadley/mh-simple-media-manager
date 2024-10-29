@@ -1,13 +1,14 @@
 <?php /*
 Plugin Name: Media Locations
 Author: Michael Headley
-Author URI: http://mheadley.com
+Author URI: https://mheadley.com
 Plugin URI: https://mheadley.com/developing/wordpress-plugins/wp-simple-media-locations-management-with-real-folders/
 Description:  Easily assign locations, filter media by location and manage them via a category tree structure under Media Locations.  This plugin  adds a dropdown select to all media upload forms and a filter to attachments browsers. The selected location is the folder in which the file will be uploaded. Modifying location position/structure will <strong>NOT</strong> move images after intial upload.  Please see plugin site for details.
-Version: 1.0.0
-License:  APACHE
+Version: 1.2.0
+License:  GPL v3
 
 */
+
 
 class MH_Media_Locations 
 {
@@ -165,7 +166,6 @@ class MH_Media_Locations
         add_action('post-plupload-upload-ui', array( $this, 'mh_media_locations_get_select_mvc' ), 20 );
         add_action( current_filter(), array( $this, 'mh_media_locations_setup_vars' ), 20 );
         add_action( 'restrict_manage_posts', array( $this, 'mh_media_locations_get_select' ) );
-       // add_filter( "manage_taxonomies_for_attachment_columns", array( $this, 'mh_media_locations_add_columns' ) );
     }
 
     public function mh_media_locations_setup_vars()
@@ -175,14 +175,6 @@ class MH_Media_Locations
         $this->taxonomies = get_object_taxonomies( $this->post_type );
     }
 
-
-    public function mh_media_locations_add_columns( $taxonomies )
-    {
-        return array_merge(
-             $taxonomies
-            ,$this->taxonomies
-        );
-    }
 
     public function mh_media_locations_get_select()
     {
@@ -253,14 +245,12 @@ class MH_Media_Locations
 
     public function mh_register_media_locations_upload_dir($path){	
         if(!empty($path['error'])) { return $path; } //error; do nothing.
-        $customdir = $this->currentUploadBase;
         if( isset($_REQUEST['mediaLocation']) ) {
-            $customdir = $this->currentUploadBase . "/" . $this->mh_register_media_locations_upload_location_build($_REQUEST['mediaLocation']); 
+            $customdir = "/" . $this->mh_register_media_locations_upload_location_build($_REQUEST['mediaLocation']); 
         } 
-        // else{
-        //    // $customdir = $this->currentUploadBase . "/" . $this->mh_register_media_locations_upload_location_build($this->$currentUploadLocation); 
-            
-        // }
+        else{
+            return $path;
+         }
         $path['path'] 	 = str_replace($path['subdir'], '', $path['path']); //remove default subdir (year/month)
         $path['url']	 = str_replace($path['subdir'], '', $path['url']);		
         $path['subdir']  = $customdir;
@@ -272,7 +262,7 @@ class MH_Media_Locations
         if($id < 1){return "";}
         $all_tax_terms = get_terms( 'attachment_location', array( 'hide_empty' => false ));
         $term = array_values(get_terms( 'attachment_location', array( 'hide_empty' => false, 'include'=> array($id) )))[0];
-        return $term && $term->parent > 0 ? $this->getParentLabel($term->parent, $all_tax_terms) . $this->mh_register_media_locations_term_slug_parse($term->slug) : $this->mh_register_media_locations_term_slug_parse($term->slug);
+        return $term && $term->parent > 0 ? $this->getParentSlug($term->parent, $all_tax_terms) . $this->mh_register_media_locations_term_slug_parse($term->slug) : $this->mh_register_media_locations_term_slug_parse($term->slug);
     }
     public function mh_register_media_locations_term_slug_parse($term){
         $termArray = explode("_", $term);
@@ -297,9 +287,6 @@ class MH_Media_Locations
 
     function mh_register_media_locations_enqueue_media_upload() { 
         wp_register_script('mh-media-location-upload', plugins_url('mh-simple-media-library-upload.js' , __FILE__ ), array('media-editor', 'media-views'));
-        // wp_localize_script( 'mh-media-location-upload', 'MediaLibraryTaxonomyFilterData', array(
-        //     'terms'     => get_terms( 'attachment_location', array( 'hide_empty' => false ) ),
-        // ) );
 
         wp_enqueue_script('mh-media-location-upload');
     }
@@ -330,8 +317,7 @@ class MH_Media_Locations
             <?php
         });
     }
-    function getParentLabel($id, $termsArray){
-        //$term = get_term_by('id', $id, 'attachment_location');
+    function getParentSlug($id, $termsArray){
         $term;
         foreach($termsArray as $termItem){   
             if($termItem->term_id === $id){
@@ -340,7 +326,7 @@ class MH_Media_Locations
           }
           if($term){
             if($term->parent){
-                return $this->getParentLabel($term->parent, $termsArray) . $this->mh_register_media_locations_term_slug_parse($term->slug) . '/';
+                return $this->getParentSlug($term->parent, $termsArray) . $this->mh_register_media_locations_term_slug_parse($term->slug) . '/';
               }
               return $this->mh_register_media_locations_term_slug_parse($term->slug) . '/';
           }
@@ -357,27 +343,21 @@ class MHSML_walker extends Walker_CategoryDropdown
         ,'id'     => 'term_id'
     );
     public $tax_name;
-    
-    function mh_slug_parse($term){
-        $termArray = explode("_", $term);
-        return $termArray[count($termArray) - 1];
-    }
-   
+
 
     function getParentLabel($id, $termsArray){
-        //$term = get_term_by('id', $id, 'attachment_location');
         $term;
         foreach($termsArray as $termItem){   
             if($termItem->term_id === $id){
                 $term = $termItem;
             }
-          }
-          if($term){
+        }
+        if($term){
             if($term->parent){
-                return $this->getParentLabel($term->parent, $termsArray) . $this->mh_slug_parse($term->slug) . '/';
-              }
-              return $this->mh_slug_parse($term->slug) . '/';
-          }
+                return $this->getParentLabel($term->parent, $termsArray) . $term->name . '/';
+            }
+            return $term->name . '/';
+        }
 
     }
     function start_el( &$output, $term, $depth = 0, $args = array(), $id = 0 )
@@ -385,8 +365,6 @@ class MHSML_walker extends Walker_CategoryDropdown
         
         $all_tax_terms = get_terms( 'attachment_location', array( 'hide_empty' => false ));
         $pad = $term->parent > 0 ? $this->getParentLabel($term->parent, $all_tax_terms) : '';
-        //$pad = $term->parent > 0 ? $this->getParentLabel($term->term_id) : '';
-        $cat_name = $this->mh_slug_parse($term->slug);//apply_filters( 'list_cats', $term->name, $term );
 
         $output .= sprintf(
              '<option class="level-%s" value="%s" %s>%s%s</option>'
@@ -397,7 +375,7 @@ class MHSML_walker extends Walker_CategoryDropdown
                 ,$term->slug
                 ,false
              )
-            ,"{$pad}{$cat_name}"
+            ,"{$pad}{$term->name}"
             ,$args['show_count']
                 ? "&nbsp;&nbsp;({$term->count})"
                 : ''
@@ -417,14 +395,8 @@ class MHSML_walkerMVC extends Walker_CategoryDropdown
         ,'id'     => 'term_id'
     );
     public $tax_name;
-
-    function mh_slug_parse($term){
-        $termArray = explode("_",  $term);
-        return $termArray[count($termArray) - 1];
-    }
    
     function getParentLabel($id, $termsArray){
-        //$term = get_term_by('id', $id, 'attachment_location');
         $term;
         foreach($termsArray as $termItem){   
             if($termItem->term_id === $id){
@@ -432,10 +404,10 @@ class MHSML_walkerMVC extends Walker_CategoryDropdown
             }
           }
           if($term){
-            if($term->parent){
-                return $this->getParentLabel($term->parent, $termsArray) . $this->mh_slug_parse($term->slug) . '/';
+            if($term->parent > 0){
+                return  $this->getParentLabel($term->parent, $termsArray)  . $term->name  .  '/';
               }
-              return $this->mh_slug_parse($term->slug) . '/';
+            return  $term->name .   '/';
           }
 
     }
@@ -444,8 +416,6 @@ class MHSML_walkerMVC extends Walker_CategoryDropdown
         
         $all_tax_terms = get_terms( 'attachment_location', array( 'hide_empty' => false ));
         $pad = $term->parent > 0 ? $this->getParentLabel($term->parent, $all_tax_terms) : '';
-        //$pad = $term->parent > 0 ? $this->getParentLabel($term->term_id) : '';
-        $cat_name = $this->mh_slug_parse($term->slug);//apply_filters( 'list_cats', $term->name, $term );
 
         $output .= sprintf(
              '<option class="level-%s" value="%s" %s>%s%s</option>'
@@ -456,7 +426,7 @@ class MHSML_walkerMVC extends Walker_CategoryDropdown
                 ,$term->term_id
                 ,false
              )
-            ,"{$pad}{$cat_name}"
+            ,"{$pad}{$term->name}"
             ,$args['show_count']
                 ? "&nbsp;&nbsp;({$term->count})"
                 : ''
@@ -467,4 +437,6 @@ class MHSML_walkerMVC extends Walker_CategoryDropdown
 
 }
 
-$mh_location_metabox = new MH_Media_Locations('recipe');
+$mh_location_metabox = new MH_Media_Locations('media_managing');
+
+

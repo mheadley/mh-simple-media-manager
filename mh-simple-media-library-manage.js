@@ -1,6 +1,6 @@
 /*
  *  Media Locations
- *  Plugin URI: http://mheadley.com
+ *  Plugin URI: https://mheadley.com
  *
  * handles putting dropdown for filtering locations.
  * version : 0.5
@@ -22,7 +22,7 @@
 			// Formats the 'terms' we've included via wp_localize_script()
 			_.each( MediaLibraryTaxonomyFilterData.terms || {}, function( value, index ) {
 				filters[ index ] = {
-					text: value.parent > 0 ? getParentName(value.parent) + mh_slug_parse(value.slug)  : mh_slug_parse(value.slug),
+					text: value.parent > 0 ? getParentName(value.parent) + value.name  :  value.name,
 					props: {
 						// Change this: key needs to be the WP_Query var for the taxonomy
 						attachment_location: value.slug,
@@ -50,9 +50,9 @@
       var html_string = "<div class='inline-status-and-location'><div class='upload-inline-status-container'><p>Select Media Location</p><select class='attachment-location-select-inline-upload'><option value=''>Default Location</option>";
       _.each(MediaLibraryTaxonomyFilterData.terms,function(val){   
         if(val.parent > 0){
-          html_string += "<option value='" + val.term_id + "'>" + getParentName(val.parent) + mh_slug_parse(val.slug) +"</option>" ;
+          html_string += "<option value='" + val.term_id + "'>" + getParentName(val.parent) +  val.name +"</option>" ;
         }else{
-          html_string += "<option value='" + val.term_id + "'>" + mh_slug_parse(val.slug) +"</option>" ;
+          html_string += "<option value='" + val.term_id + "'>" + val.name + "</option>" ;
         }
         
       }) 
@@ -108,9 +108,9 @@
 
     if(item){
       if(item.parent){
-        return getParentName(item.parent) + mh_slug_parse(item.slug) + "/";
+        return getParentName(item.parent) + item.name + "/";
       }
-      return mh_slug_parse(item.slug) + "/";
+      return  item.name + "/";
     } 
     return false;
   }

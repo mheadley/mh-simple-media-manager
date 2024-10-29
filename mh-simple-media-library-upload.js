@@ -6,7 +6,7 @@
  * version : 0.5
  */
 'use strict';
-console.log("simple library js loaded");
+console.log("MH simple library locations:  js loaded");
 (function(){
   var i;
 
